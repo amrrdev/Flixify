@@ -4,11 +4,108 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+model User {
+  id Int @default(autoincrement()) @id
+  firstName String @db.VarChar(100)
+  lastName String @db.VarChar(100)
+  email String @unique
+  password String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ViewingHistory ViewingHistory[]
+  comments Comment[]
+  likes Like[]
+  subscription Subscription[]
+}
+
+model Video {
+  id Int @default(autoincrement()) @id
+  url String @unique
+  title String @db.VarChar(110)
+  description String
+  video_rate VideoRating @default(NOT_RATED)
+  durationInMinutes Int
+  uploadedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ViewingHistory ViewingHistory[]
+  comments Comment[]
+  likes Like[]
+}
+
+model ViewingHistory {
+  id Int @id @default(autoincrement())
+  userId Int
+  videoId Int
+  lastWatch DateTime @updatedAt
+  watchDuration Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  @@unique([userId, videoId]) // Ensures each user can only have one entry per video
+}
+
+
+model Comment {
+  id Int @default(autoincrement()) @id
+  content String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user User @relation(fields: [userId], references: [id])
+  video Video @relation(fields: [videoId], references: [id])
+  userId Int
+  videoId Int
+}
+
+model Like {
+  id Int @default(autoincrement()) @id
+  user User @relation(fields: [userId], references: [id])
+  video Video @relation(fields: [videoId], references: [id])
+  userId Int
+  videoId Int
+  @@unique([userId, videoId])
+}
+
+model Subscription {
+  id Int @default(autoincrement()) @id
+  startDate DateTime @default(now())
+  endDate DateTime
+  status Status @default(Active)
+  user User @relation(fields: [userId], references: [id])
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+  planId Int
+  userId Int
+}
+
+model SubscriptionPlan {
+  id Int @default(autoincrement()) @id
+  name PlanName
+  description String
+  subscription Subscription[]
+}
+
+enum PlanName {
+  Basic
+  Premium
+}
+
+enum Status {
+  Active
+  Expired
+  Cancelled
+}
+enum VideoRating {
+  NOT_RATED
+  ONE
+  TWO
+  THREE
+  FOUR
+  FIVE
 }

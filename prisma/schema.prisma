@@ -13,7 +13,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model User {
+model Users {
   id Int @default(autoincrement()) @id
   firstName String @db.VarChar(100)
   lastName String @db.VarChar(100)
@@ -21,13 +21,13 @@ model User {
   password String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  ViewingHistory ViewingHistory[]
-  comments Comment[]
-  likes Like[]
-  subscription Subscription[]
+  ViewingHistory ViewingHistories[]
+  comments Comments[]
+  likes Likes[]
+  subscription Subscriptions[]
 }
 
-model Video {
+model Videos {
   id Int @default(autoincrement()) @id
   url String @unique
   title String @db.VarChar(110)
@@ -36,59 +36,60 @@ model Video {
   durationInMinutes Int
   uploadedAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  ViewingHistory ViewingHistory[]
-  comments Comment[]
-  likes Like[]
+  ViewingHistory ViewingHistories[]
+  comments Comments[]
+  likes Likes[]
 }
 
-model ViewingHistory {
+model ViewingHistories {
   id Int @id @default(autoincrement())
   userId Int
   videoId Int
   lastWatch DateTime @updatedAt
   watchDuration Int
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  video Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
   @@unique([userId, videoId]) // Ensures each user can only have one entry per video
 }
 
 
-model Comment {
+model Comments {
   id Int @default(autoincrement()) @id
   content String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user User @relation(fields: [userId], references: [id])
-  video Video @relation(fields: [videoId], references: [id])
+  user Users @relation(fields: [userId], references: [id])
+  video Videos @relation(fields: [videoId], references: [id])
   userId Int
   videoId Int
+	@@map("Comment")
 }
 
-model Like {
+model Likes {
   id Int @default(autoincrement()) @id
-  user User @relation(fields: [userId], references: [id])
-  video Video @relation(fields: [videoId], references: [id])
+  user Users @relation(fields: [userId], references: [id])
+  video Videos @relation(fields: [videoId], references: [id])
   userId Int
   videoId Int
   @@unique([userId, videoId])
 }
 
-model Subscription {
+model Subscriptions {
   id Int @default(autoincrement()) @id
   startDate DateTime @default(now())
   endDate DateTime
-  status Status @default(Active)
-  user User @relation(fields: [userId], references: [id])
-  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+  status Status @default(NotSubscribed)
+  user Users @relation(fields: [userId], references: [id])
+  plan SubscriptionPlans @relation(fields: [planId], references: [id])
   planId Int
   userId Int
 }
 
-model SubscriptionPlan {
+model SubscriptionPlans {
   id Int @default(autoincrement()) @id
   name PlanName
   description String
-  subscription Subscription[]
+  subscription Subscriptions[]
 }
 
 enum PlanName {
@@ -97,15 +98,16 @@ enum PlanName {
 }
 
 enum Status {
+  NotSubscribed
   Active
   Expired
   Cancelled
 }
 enum VideoRating {
   NOT_RATED
-  ONE
-  TWO
-  THREE
-  FOUR
-  FIVE
+  One
+  Tow
+  Three
+  Four
+  Five
 }

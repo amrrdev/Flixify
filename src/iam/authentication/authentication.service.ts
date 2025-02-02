@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -8,12 +9,18 @@ import { DatabaseService } from '../../database/database.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { HashingService } from '../hashing/hashing.service';
 import { SignInDto } from './dto/sign-in.dto';
+import { JwtService } from '@nestjs/jwt';
+import jwtConfig from './config/jwt.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly hashingService: HashingService,
+    private readonly jwtService: JwtService,
+    @Inject(jwtConfig.KEY)
+    private readonly jwtConfigrations: ConfigType<typeof jwtConfig>,
   ) {}
 
   async login(signInDto: SignInDto) {
@@ -34,8 +41,17 @@ export class AuthenticationService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // TODO: Generate Jwt
-    return user;
+    const accessToken = this.jwtService.sign(
+      { sub: user.id, email: user.email },
+      {
+        secret: this.jwtConfigrations.secret,
+        expiresIn: this.jwtConfigrations.accessTokenTtl,
+        audience: this.jwtConfigrations.audience,
+        issuer: this.jwtConfigrations.issuer,
+      },
+    );
+
+    return accessToken;
   }
 
   async signup(signUpDto: SignUpDto) {
@@ -52,8 +68,7 @@ export class AuthenticationService {
       ...signUpDto,
       password: await this.hashingService.hash(signUpDto.password),
     });
-    // TODO: PLEASE DO NOT FORGET THIS
-    console.log(signUpDto);
+
     const newUser = await this.databaseService.users.create({
       data: signUpDto,
     });

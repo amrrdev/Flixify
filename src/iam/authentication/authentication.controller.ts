@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignUpDto } from './dto/sign-up.dto';
@@ -12,9 +15,14 @@ import { SignInDto } from './dto/sign-in.dto';
 import { Response } from 'express';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enum/auth-type.enum';
+import { SerializeInterceptor } from './interceptors/serialize.interceptor';
+import { Users } from '@prisma/client';
+import { MailService } from '../../integrations/mail/mail.service';
+import { EmailType } from '../../integrations/mail/enum/email-types.enum';
 
 @Controller('auth')
 @Auth(AuthType.NONE)
+@UseInterceptors(SerializeInterceptor<Users>)
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
@@ -38,5 +46,19 @@ export class AuthenticationController {
     return {
       message: 'Login successful',
     };
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  resetPassword(@Body('email') email: string) {
+    return this.authenticationService.resetPassword(email);
+  }
+
+  @Post('change-password')
+  changePassword(
+    @Query('token') token: string,
+    @Body('password') password: string,
+  ) {
+    return this.authenticationService.changePassword(token, password);
   }
 }

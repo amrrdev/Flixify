@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Comment" ALTER COLUMN "createdAt" SET DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "Videos" ALTER COLUMN "uploadedAt" DROP DEFAULT;

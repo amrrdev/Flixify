@@ -21,10 +21,12 @@ model Users {
   password String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  role UserRole @default(User)
   ViewingHistory ViewingHistories[]
   comments Comments[]
   likes Likes[]
   subscription Subscriptions[]
+  resetPassword ResetPasswords[]
 }
 
 model Videos {
@@ -34,7 +36,7 @@ model Videos {
   description String
   video_rate VideoRating @default(NOT_RATED)
   durationInMinutes Int
-  uploadedAt DateTime @default(now())
+  uploadedAt DateTime 
   updatedAt DateTime @updatedAt
   ViewingHistory ViewingHistories[]
   comments Comments[]
@@ -92,6 +94,20 @@ model SubscriptionPlans {
   subscription Subscriptions[]
 }
 
+model ResetPasswords {
+  id Int @default(autoincrement()) @id
+  token String 
+  expiration DateTime
+  createdAt DateTime @default(now())
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+}
+
+enum UserRole {
+  User
+  Admin
+}
+
 enum PlanName {
   Basic
   Premium
@@ -103,6 +119,7 @@ enum Status {
   Expired
   Cancelled
 }
+
 enum VideoRating {
   NOT_RATED
   One

@@ -1,10 +1,52 @@
-# Streaming Service API
+# Streaming Service Backend
 
 ## Overview
 
-The **Streaming Service API** is a powerful backend platform designed to handle all aspects of a video streaming service. This API provides core functionality to manage user accounts, videos, viewing history, subscriptions, and user interactions. It serves as the foundation for building robust and scalable media streaming applications, enabling developers to integrate the backend with custom front-end applications or other services.
+The **Streaming Service Backend** A scalable and secure video streaming backend, designed for a Netflix-like experience. This backend handles video uploads, role-based access control, subscription-based viewing, and Cloudinary integration for optimized streaming.
 
 **Note**: This project is still in development. New features are being added, and improvements are continuously being made.
+
+---
+
+## Features
+
+### Role-Based Access Control (RBAC)
+
+- **Admins** can upload and manage videos.
+- **Subscribers** can stream videos based on their subscription plan.
+- **Non-subscribers** have limited or no access to premium content.
+
+### Secure & Efficient Video Uploads
+
+- **Pre-Signed URLs** → Admins upload videos **directly** to Cloudinary (no backend overload).
+- **Webhook-Driven Processing** → The backend listens for Cloudinary’s **webhook** to track upload status.
+
+### Secure Authentication & Authorization
+
+- Uses **JWT (JSON Web Token)** for user authentication.
+- Protects **video access** based on user roles.
+- Integrates **subscription-based access** with a payment gateway.
+
+### User Engagement Features
+
+- **Like/Dislike** videos.
+- **Add to Watchlist** for later viewing.
+- **Rate & Review** videos.
+- **Enable Subtitles** for a better viewing experience.
+
+### Subscription & Payment Integration
+
+- Supports **subscription plans** for accessing premium videos.
+- Uses a **payment gateway** for secure transactions.
+- Tracks **subscription status** for each user.
+
+### Webhook Integration with Cloudinary
+
+- The backend listens for **Cloudinary's webhook** to receive video upload status.
+- Updates the **database automatically** when a video is processed.
+- Enables **async processing** for a smooth user experience.
+
+---
 
 ## Project Setup
 
@@ -25,22 +67,63 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## Run Tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
 ---
 
 ## **API Endpoints**
+
+#### **Upload Video**
+
+##### 1) Request Presigned URL
+
+**Endpoint:** `GET /video/signed-url?tags=nestjs course from nestjs website|Learn NestJS from the official website`
+
+**Note**: The tags consist of the title and description of the video, separated by a `|`.
+
+**Response:**
+
+```json
+{
+  "cloud_name": "dgfagvqwo",
+  "api_key": "576485119445155",
+  "signature": "dac9c8cec85e48cf8c6d49f70ced2b72930a6a2c",
+  "timestamp": 1738584921000,
+  "tags": [
+    "nestjs course from nestjs website|Learn NestJS from the official website"
+  ],
+  "folder": "videos"
+}
+```
+
+##### 2) Upload Video to Cloudinary
+
+**Endpoint:** `POST https://api.cloudinary.com/v1_1/dgfagvqwo/video/upload`
+
+```form-data
+// form-data not JSON
+
+"file": The Video
+"cloud_name": "dgfagvqwo",
+"api_key": "576485119445155",
+"signature": "dac9c8cec85e48cf8c6d49f70ced2b72930a6a2c",
+"timestamp": 1738584921000,
+"tags": [
+  "nestjs course from nestjs website|Learn NestJS from the official website"
+],
+"folder": "videos"
+```
+
+**Response:**
+
+```json
+{
+  ...
+  "url": "http://res.cloudinary.com/dgfagvqwo/video/upload/v1738584936/videos/xtdwilpdrikmrvwcmjsj.mp4",
+  "secure_url": "https://res.cloudinary.com/dgfagvqwo/video/upload/v1738584936/videos/xtdwilpdrikmrvwcmjsj.mp4"
+  ...
+}
+```
+
+**Note**: The backend will trigger the uploaded file and automatically store the link in the database.
 
 ### **Authentication Routes**
 
@@ -64,10 +147,6 @@ $ npm run test:cov
 
 - `201 Created` – User successfully registered.
 - `400 Bad Request` – Email already in use or validation failed.
-
----
-
-Here’s the updated **login endpoint** with the JWT being set in an **HTTP-only cookie** instead of returning it in the response body:
 
 ---
 
@@ -148,62 +227,6 @@ Set-Cookie: accessToken=your-jwt-token; HttpOnly; Secure; SameSite=Strict; Path=
 
 - `200 OK` – Password successfully changed.
 - `400 Bad Request` – Invalid or expired token.
-
----
-
-#### **Upload Video**
-
-##### 1) Request Presigned URL
-
-**Endpoint:** `GET /video/signed-url?tags=nestjs course from nestjs website|Learn NestJS from the official website`
-
-**Note**: The tags consist of the title and description of the video, separated by a `|`.
-
-**Response:**
-
-```json
-{
-  "cloud_name": "dgfagvqwo",
-  "api_key": "576485119445155",
-  "signature": "dac9c8cec85e48cf8c6d49f70ced2b72930a6a2c",
-  "timestamp": 1738584921000,
-  "tags": [
-    "nestjs course from nestjs website|Learn NestJS from the official website"
-  ],
-  "folder": "videos"
-}
-```
-
-##### 2) Upload Video to Cloudinary
-
-**Endpoint:** `POST https://api.cloudinary.com/v1_1/dgfagvqwo/video/upload`
-
-```form-data
-// form-data not JSON
-
-"file": The Video
-"cloud_name": "dgfagvqwo",
-"api_key": "576485119445155",
-"signature": "dac9c8cec85e48cf8c6d49f70ced2b72930a6a2c",
-"timestamp": 1738584921000,
-"tags": [
-  "nestjs course from nestjs website|Learn NestJS from the official website"
-],
-"folder": "videos"
-```
-
-**Response:**
-
-```json
-{
-  ...
-  "url": "http://res.cloudinary.com/dgfagvqwo/video/upload/v1738584936/videos/xtdwilpdrikmrvwcmjsj.mp4",
-  "secure_url": "https://res.cloudinary.com/dgfagvqwo/video/upload/v1738584936/videos/xtdwilpdrikmrvwcmjsj.mp4"
-  ...
-}
-```
-
-**Note**: The backend will trigger the uploaded file and automatically store the link in the database.
 
 ---
 

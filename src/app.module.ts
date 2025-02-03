@@ -5,6 +5,10 @@ import { IamModule } from './iam/iam.module';
 import { APP_GUARD } from '@nestjs/core';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
+import { MailService } from './integrations/mail/mail.service';
+import { MailModule } from './integrations/mail/mail.module';
+import { CloudinaryModule } from './integrations/cloudinary/cloudinary.module';
+import { VideoModule } from './video/video.module';
 
 @Module({
   imports: [
@@ -13,6 +17,9 @@ import { ConfigModule } from '@nestjs/config';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    MailModule,
+    CloudinaryModule,
+    VideoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

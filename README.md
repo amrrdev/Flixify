@@ -159,7 +159,7 @@ Set-Cookie: accessToken=your-jwt-token; HttpOnly; Secure; SameSite=Strict; Path=
 
 **Note**: The tags consist of the title and description of the video, separated by a `|`.
 
-**Request Body:**
+**Response:**
 
 ```json
 {

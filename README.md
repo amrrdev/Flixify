@@ -1,7 +1,5 @@
 # Streaming Service Backend
 
-## Overview
-
 The **Streaming Service Backend** A scalable and secure video streaming backend, designed for a Netflix-like experience. This backend handles video uploads, role-based access control, subscription-based viewing, and Cloudinary integration for optimized streaming.
 
 **Note**: This project is still in development. New features are being added, and improvements are continuously being made.

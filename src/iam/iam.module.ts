@@ -11,12 +11,14 @@ import jwtConfig from './authentication/config/jwt.config';
 import { AuthenticationGuard } from './authentication/guards/authentication.guard';
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { APP_GUARD, Reflector } from '@nestjs/core';
+import { MailModule } from '../integrations/mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     DatabaseModule,
+    MailModule,
   ],
   controllers: [AuthenticationController],
   providers: [

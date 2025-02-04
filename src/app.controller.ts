@@ -11,7 +11,6 @@ export class AppController {
 
   @Get()
   getHello(@Req() request: Request): string {
-    console.log(request.cookies);
     return this.appService.getHello();
   }
 }

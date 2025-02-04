@@ -17,6 +17,10 @@ import { MailService } from '../../integrations/mail/mail.service';
 
 import * as crypto from 'node:crypto';
 import { EmailType } from '../../integrations/mail/enum/email-types.enum';
+import { ActiveUserDate } from '../interfaces/active-user-data.interface';
+import { Users } from '@prisma/client';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { StripeService } from '../../integrations/stripe/stripe.service';
 
 @Injectable()
 export class AuthenticationService {
@@ -27,6 +31,7 @@ export class AuthenticationService {
     @Inject(jwtConfig.KEY)
     private readonly jwtConfigrations: ConfigType<typeof jwtConfig>,
     private readonly mailService: MailService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async changePassword(encodedToken: string, newPassword: string) {
@@ -110,17 +115,34 @@ export class AuthenticationService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
-      {
-        secret: this.jwtConfigrations.secret,
-        expiresIn: this.jwtConfigrations.accessTokenTtl,
-        audience: this.jwtConfigrations.audience,
-        issuer: this.jwtConfigrations.issuer,
-      },
-    );
+    const [accessToken, refreshToken] = await Promise.all([
+      this.signToken<Partial<ActiveUserDate>>(
+        user.id,
+        this.jwtConfigrations.accessTokenTtl,
+        {
+          email: user.email,
+          role: user.role,
+          stripeCustomerId: user.stripeCustomerId,
+        },
+      ),
+      this.signToken(user.id, this.jwtConfigrations.refreshTokenTtl),
+    ]);
+
+    // TODO: Replace the cookie with a Bearer token and return both the access and refresh tokens for the frontend.
 
     return accessToken;
+  }
+
+  private async signToken<T>(userId: number, expiresIn: number, payload?: T) {
+    return await this.jwtService.signAsync(
+      { sub: userId, ...payload },
+      {
+        secret: this.jwtConfigrations.secret,
+        audience: this.jwtConfigrations.audience,
+        issuer: this.jwtConfigrations.issuer,
+        expiresIn,
+      },
+    );
   }
 
   async signup(signUpDto: SignUpDto) {
@@ -128,10 +150,16 @@ export class AuthenticationService {
       where: { email: signUpDto.email },
     });
 
-    if (existingUser)
+    if (existingUser) {
       throw new BadRequestException(
         'Email is already registered. Please choose a different one',
       );
+    }
+
+    const stripeCustomer = await this.stripeService.createCustomer({
+      email: signUpDto.email,
+      name: signUpDto.firstName,
+    });
 
     Object.assign(signUpDto, {
       ...signUpDto,
@@ -139,7 +167,10 @@ export class AuthenticationService {
     });
 
     const newUser = await this.databaseService.users.create({
-      data: signUpDto,
+      data: {
+        ...signUpDto,
+        stripeCustomerId: stripeCustomer.id,
+      },
     });
 
     if (!newUser) {
@@ -148,5 +179,37 @@ export class AuthenticationService {
       );
     }
     return newUser;
+  }
+
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    try {
+      const { sub } = await this.jwtService.verifyAsync<
+        Pick<ActiveUserDate, 'sub'>
+      >(refreshTokenDto.refreshToken, {
+        secret: this.jwtConfigrations.secret,
+        audience: this.jwtConfigrations.audience,
+        issuer: this.jwtConfigrations.issuer,
+      });
+
+      const user = await this.databaseService.users.findUnique({
+        where: { id: sub },
+      });
+
+      if (!user) {
+        throw new NotFoundException('User does not exists');
+      }
+
+      // TODO: refactor this
+      const [accessToken, refreshToken] = await Promise.all([
+        this.signToken<Partial<ActiveUserDate>>(
+          user.id,
+          this.jwtConfigrations.accessTokenTtl,
+          { email: user.email },
+        ),
+        this.signToken(user.id, this.jwtConfigrations.refreshTokenTtl),
+      ]);
+    } catch (err) {
+      throw new UnauthorizedException();
+    }
   }
 }

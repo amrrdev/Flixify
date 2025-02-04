@@ -70,7 +70,6 @@ export class MailService {
     try {
       await this.transporter.sendMail(this.mailOptions);
     } catch (err) {
-      console.log(err);
       throw new Error('Can not send an email');
     }
   }

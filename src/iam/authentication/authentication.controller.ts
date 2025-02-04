@@ -17,8 +17,7 @@ import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enum/auth-type.enum';
 import { SerializeInterceptor } from './interceptors/serialize.interceptor';
 import { Users } from '@prisma/client';
-import { MailService } from '../../integrations/mail/mail.service';
-import { EmailType } from '../../integrations/mail/enum/email-types.enum';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Controller('auth')
 @Auth(AuthType.NONE)
@@ -60,5 +59,11 @@ export class AuthenticationController {
     @Body('password') password: string,
   ) {
     return this.authenticationService.changePassword(token, password);
+  }
+
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authenticationService.refreshToken(refreshTokenDto);
   }
 }

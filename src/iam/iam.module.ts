@@ -12,6 +12,8 @@ import { AuthenticationGuard } from './authentication/guards/authentication.guar
 import { AccessTokenGuard } from './authentication/guards/access-token.guard';
 import { APP_GUARD, Reflector } from '@nestjs/core';
 import { MailModule } from '../integrations/mail/mail.module';
+import { RolesGuard } from './authorization/guards/roles.guard';
+import { StripeModule } from '../integrations/stripe/stripe.module';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { MailModule } from '../integrations/mail/mail.module';
     JwtModule.registerAsync(jwtConfig.asProvider()),
     DatabaseModule,
     MailModule,
+    StripeModule,
   ],
   controllers: [AuthenticationController],
   providers: [
@@ -29,6 +32,10 @@ import { MailModule } from '../integrations/mail/mail.module';
     {
       provide: APP_GUARD,
       useClass: AuthenticationGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
     AccessTokenGuard,
     AuthenticationService,

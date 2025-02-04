@@ -9,6 +9,8 @@ import { MailService } from './integrations/mail/mail.service';
 import { MailModule } from './integrations/mail/mail.module';
 import { CloudinaryModule } from './integrations/cloudinary/cloudinary.module';
 import { VideoModule } from './video/video.module';
+import { UsersModule } from './users/users.module';
+import { StripeModule } from './integrations/stripe/stripe.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { VideoModule } from './video/video.module';
     MailModule,
     CloudinaryModule,
     VideoModule,
+    UsersModule,
+    StripeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

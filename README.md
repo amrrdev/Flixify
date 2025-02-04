@@ -1,6 +1,6 @@
 # Streaming Service Backend
 
-The **Streaming Service Backend** A scalable and secure video streaming backend, designed for a Netflix-like experience. This backend handles video uploads, role-based access control, subscription-based viewing, and Cloudinary integration for optimized streaming.
+The **Streaming Service Backend** is a scalable and secure video streaming backend, designed for a Netflix-like experience. This backend handles video uploads, role-based access control, subscription-based viewing, and Cloudinary integration for optimized streaming.
 
 **Note**: This project is still in development. New features are being added, and improvements are continuously being made.
 
@@ -19,6 +19,18 @@ The **Streaming Service Backend** A scalable and secure video streaming backend,
 - **Pre-Signed URLs** → Admins upload videos **directly** to Cloudinary (no backend overload).
 - **Webhook-Driven Processing** → The backend listens for Cloudinary’s **webhook** to track upload status.
 
+### Subscription & Payment Integration
+
+- Supports **subscription plans** for accessing premium videos.
+- Uses **Stripe** for secure payment processing.
+- Tracks **subscription status** for each user.
+
+### Webhook Integration with Cloudinary
+
+- The backend listens for **Cloudinary's webhook** to receive video upload status.
+- Updates the **database automatically** when a video is processed.
+- Enables **async processing** for a smooth user experience.
+
 ### Secure Authentication & Authorization
 
 - Uses **JWT (JSON Web Token)** for user authentication.
@@ -31,18 +43,6 @@ The **Streaming Service Backend** A scalable and secure video streaming backend,
 - **Add to Watchlist** for later viewing.
 - **Rate & Review** videos.
 - **Enable Subtitles** for a better viewing experience.
-
-### Subscription & Payment Integration
-
-- Supports **subscription plans** for accessing premium videos.
-- Uses a **payment gateway** for secure transactions.
-- Tracks **subscription status** for each user.
-
-### Webhook Integration with Cloudinary
-
-- The backend listens for **Cloudinary's webhook** to receive video upload status.
-- Updates the **database automatically** when a video is processed.
-- Enables **async processing** for a smooth user experience.
 
 ---
 
@@ -69,9 +69,9 @@ $ npm run start:prod
 
 ## **API Endpoints**
 
-#### **Upload Video**
+### **Upload Video**
 
-##### 1) Request Presigned URL
+#### 1) Request Presigned URL
 
 **Endpoint:** `GET /video/signed-url?tags=nestjs course from nestjs website|Learn NestJS from the official website`
 
@@ -92,7 +92,7 @@ $ npm run start:prod
 }
 ```
 
-##### 2) Upload Video to Cloudinary
+#### 2) Upload Video to Cloudinary
 
 **Endpoint:** `POST https://api.cloudinary.com/v1_1/dgfagvqwo/video/upload`
 
@@ -123,6 +123,8 @@ $ npm run start:prod
 
 **Note**: The backend will trigger the uploaded file and automatically store the link in the database.
 
+---
+
 ### **Authentication Routes**
 
 #### **1. User Signup**
@@ -148,7 +150,7 @@ $ npm run start:prod
 
 ---
 
-### **2. User Login**
+#### **2. User Login**
 
 **Endpoint:** `POST /auth/login`  
 **Description:** Authenticates a user and sets a JWT in an **HTTP-only cookie** for secure authentication.
@@ -228,11 +230,83 @@ Set-Cookie: accessToken=your-jwt-token; HttpOnly; Secure; SameSite=Strict; Path=
 
 ---
 
-### TODO
+### **Subscription & Payment Routes**
+
+#### **1. Create Subscription**
+
+**Endpoint:** `POST /subscriptions/create-subscription/:plan`  
+**Description:** Creates a subscription for the user based on the selected plan (`Basic` or `Premium`).
+
+**Request:**
+
+```http
+POST /subscriptions/create-subscription/Basic
+```
+
+**Response:**
+
+```json
+{
+  "subscriptionId": "sub_1Qot3CRYE1qXSm2xyRGohJ60",
+  "status": "incomplete",
+  "paymentIntentId": "pi_3Qot3DRYE1qXSm2x17h6Y6DZ",
+  "clientSecret": "pi_3Qot3DRYE1qXSm2x17h6Y6DZ_secret_Qv0elDYlbFQbaDXNJk8OySmri"
+}
+```
+
+---
+
+#### **2. Confirm Payment**
+
+**Endpoint:** `POST /subscriptions/confirm-payment`  
+**Description:** Confirms the payment for the subscription.
+
+**Request Body:**
+
+```json
+{
+  "paymentIntentId": "pi_3Qot3DRYE1qXSm2x17h6Y6DZ"
+}
+```
+
+**Response:**
+
+```json
+{
+  "status": "succeeded"
+}
+```
+
+---
+
+#### **3. Webhook for Stripe Events**
+
+**Endpoint:** `POST /subscriptions/webhook`  
+**Description:** Handles Stripe webhook events (e.g., payment success, payment failure).
+
+**Request Headers:**
+
+```http
+stripe-signature: your-stripe-signature
+```
+
+**Request Body:**
+
+```json
+{
+  // Stripe event data
+}
+```
+
+**Response:**
+
+- `200 OK` – Webhook processed successfully.
+
+---
+
+## TODO
 
 - **Movie & TV Show Categories** – Consider adding genres (e.g., Action, Comedy).
 - **Profiles for Multiple Users** – Allows multiple profiles under one account.
 - **Watchlist (Favorites)** – Users should be able to save videos for later.
-- **Streaming vs. Download** – Will users be able to download for offline viewing
-
----
+- **Streaming vs. Download** – Will users be able to download for offline viewing?

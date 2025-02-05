@@ -25,7 +25,13 @@ export class UsersService {
     console.log('new subscription 🥳🥂🍾💙');
   }
 
-  async getAllVideos() {
-    return await this.databaseService.videos.findMany({});
+  async getAllUsers() {
+    return await this.databaseService.users.findMany({
+      include: {
+        subscription: {
+          include: { plan: { select: { name: true, description: true } } },
+        },
+      },
+    });
   }
 }

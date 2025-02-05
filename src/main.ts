@@ -14,6 +14,7 @@ async function bootstrap() {
       transformOptions: { enableImplicitConversion: true },
     }),
   );
+  app.setGlobalPrefix('/api/v1');
   app.use(cookieParser());
 
   app.use(

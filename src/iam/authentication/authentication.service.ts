@@ -114,14 +114,13 @@ export class AuthenticationService {
     if (!isEquals) {
       throw new UnauthorizedException('Invalid email or password');
     }
-
     const [accessToken, refreshToken] = await Promise.all([
       this.signToken<Partial<ActiveUserDate>>(
         user.id,
         this.jwtConfigrations.accessTokenTtl,
         {
           email: user.email,
-          role: user.role,
+          role: user.role as 'Admin' | 'User',
           stripeCustomerId: user.stripeCustomerId,
         },
       ),

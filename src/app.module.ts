@@ -11,6 +11,8 @@ import { CloudinaryModule } from './integrations/cloudinary/cloudinary.module';
 import { VideoModule } from './video/video.module';
 import { UsersModule } from './users/users.module';
 import { StripeModule } from './integrations/stripe/stripe.module';
+import { CommenstModule } from './comments/comments.module';
+import { LikesModule } from './likes/likes.module';
 
 @Module({
   imports: [
@@ -24,6 +26,8 @@ import { StripeModule } from './integrations/stripe/stripe.module';
     VideoModule,
     UsersModule,
     StripeModule,
+    CommenstModule,
+    LikesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

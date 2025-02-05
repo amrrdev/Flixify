@@ -21,12 +21,13 @@ model Users {
   password String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  role UserRole @default(User)
+  role String @default("User" ) 
   ViewingHistory ViewingHistories[]
   comments Comments[]
   likes Likes[]
   subscription Subscriptions[]
   resetPassword ResetPasswords[]
+  stripeCustomerId String
 }
 
 model Videos {
@@ -60,8 +61,8 @@ model Comments {
   content String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  user Users @relation(fields: [userId], references: [id])
-  video Videos @relation(fields: [videoId], references: [id])
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Videos @relation(fields: [videoId], references: [id],  onDelete: Cascade)
   userId Int
   videoId Int
 	@@map("Comment")
@@ -69,8 +70,8 @@ model Comments {
 
 model Likes {
   id Int @default(autoincrement()) @id
-  user Users @relation(fields: [userId], references: [id])
-  video Videos @relation(fields: [videoId], references: [id])
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video Videos @relation(fields: [videoId], references: [id], onDelete: Cascade)
   userId Int
   videoId Int
   @@unique([userId, videoId])
@@ -81,8 +82,8 @@ model Subscriptions {
   startDate DateTime @default(now())
   endDate DateTime
   status Status @default(NotSubscribed)
-  user Users @relation(fields: [userId], references: [id])
-  plan SubscriptionPlans @relation(fields: [planId], references: [id])
+  user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlans @relation(fields: [planId], references: [id], onDelete: Cascade)
   planId Int
   userId Int
 }
@@ -101,11 +102,6 @@ model ResetPasswords {
   createdAt DateTime @default(now())
   user Users @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId Int
-}
-
-enum UserRole {
-  User
-  Admin
 }
 
 enum PlanName {

@@ -14,6 +14,7 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { MailModule } from '../integrations/mail/mail.module';
 import { RolesGuard } from './authorization/guards/roles.guard';
 import { StripeModule } from '../integrations/stripe/stripe.module';
+import { SubscriptionGuard } from './authorization/guards/subscriptions.guard';
 
 @Module({
   imports: [
@@ -41,6 +42,8 @@ import { StripeModule } from '../integrations/stripe/stripe.module';
     AuthenticationService,
     DatabaseService,
     Reflector,
+    SubscriptionGuard,
   ],
+  exports: [SubscriptionGuard],
 })
 export class IamModule {}

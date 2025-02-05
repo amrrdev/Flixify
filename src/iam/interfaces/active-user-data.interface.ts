@@ -1,8 +1,8 @@
-import { UserRole } from '@prisma/client';
+import { Role } from '../../users/enums/roles.enum';
 
 export interface ActiveUserDate {
   sub: number;
   email: string;
-  role: UserRole;
+  role: 'Admin' | 'User';
   stripeCustomerId: string;
 }

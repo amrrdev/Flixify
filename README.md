@@ -6,6 +6,10 @@ The **Streaming Service Backend** is a scalable and secure video streaming backe
 
 ---
 
+## ![Streaming Service Backend](tables.png)
+
+---
+
 ## Features
 
 ### Role-Based Access Control (RBAC)
